@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HomeHunt</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                Home<span>Hunt</span>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <!-- Populated by JS -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="card mb-2">
+            <h2>Welcome to your Dashboard, <span id="user-name"></span>!</h2>
+            <p class="text-muted">Role: <span id="user-role" style="text-transform: capitalize;"></span></p>
+        </div>
+
+        <div id="seller-section" class="hidden">
+            <h3 class="mb-2">Manage Your Properties</h3>
+            
+            <div class="card mb-2">
+                <h4>Add New Property</h4>
+                <div id="add-error" class="text-center" style="color: #ef4444; margin-bottom: 1rem; display: none;"></div>
+                <div id="add-success" class="text-center" style="color: #10b981; margin-bottom: 1rem; display: none;"></div>
+                <form id="add-property-form" class="mt-2">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="prop-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="prop-location" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" id="prop-price" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="prop-desc" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Image</label>
+                        <input type="file" id="prop-image" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn-primary">Add Property</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="buyer-section" class="hidden card">
+            <h3>Your Inquiries & Wishlist</h3>
+            <p class="text-muted mt-2">You can view your saved properties and messages here.</p>
+            <a href="properties.html" class="btn-primary mt-2" style="display: inline-block;">Browse More</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 HomeHunt. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!Api.isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const user = Api.getUser();
+            document.getElementById('user-name').textContent = user.name;
+            document.getElementById('user-role').textContent = user.role;
+
+            if (user.role === 'seller' || user.role === 'admin') {
+                document.getElementById('seller-section').classList.remove('hidden');
+            } else {
+                document.getElementById('buyer-section').classList.remove('hidden');
+            }
+
+            // Handle Property Addition
+            const addForm = document.getElementById('add-property-form');
+            if (addForm) {
+                addForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    
+                    const title = document.getElementById('prop-title').value;
+                    const location = document.getElementById('prop-location').value;
+                    const price = document.getElementById('prop-price').value;
+                    const description = document.getElementById('prop-desc').value;
+                    const imageFile = document.getElementById('prop-image').files[0];
+                    
+                    const errorMsg = document.getElementById('add-error');
+                    const successMsg = document.getElementById('add-success');
+                    errorMsg.style.display = 'none';
+                    successMsg.style.display = 'none';
+
+                    try {
+                        let imageUrl = null;
+                        
+                        // Handle Image Upload First via PHP
+                        if (imageFile) {
+                            const uploadRes = await Api.uploadImage(imageFile);
+                            if (uploadRes.success) {
+                                imageUrl = uploadRes.file_path;
+                            } else {
+                                throw new Error(uploadRes.message);
+                            }
+                        }
+
+                        // Save to Node.js API
+                        const propertyData = { title, location, price, description, image_url: imageUrl };
+                        const response = await Api.addProperty(propertyData);
+
+                        if (response.error) {
+                            errorMsg.textContent = response.error;
+                            errorMsg.style.display = 'block';
+                        } else {
+                            successMsg.textContent = 'Property added successfully!';
+                            successMsg.style.display = 'block';
+                            addForm.reset();
+                        }
+                    } catch (error) {
+                        errorMsg.textContent = error.message || 'Error adding property.';
+                        errorMsg.style.display = 'block';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

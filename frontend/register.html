@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - HomeHunt</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                Home<span>Hunt</span>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <!-- Populated by JS -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="form-container card">
+            <h2 class="text-center mb-2">Create an Account</h2>
+            <div id="error-msg" class="text-center" style="color: #ef4444; margin-bottom: 1rem; display: none;"></div>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">I am a...</label>
+                    <select id="role" required>
+                        <option value="buyer">Buyer</option>
+                        <option value="seller">Seller / Agent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Register</button>
+            </form>
+            <div class="auth-link">
+                Already have an account? <a href="login.html">Login</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 HomeHunt. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const errorMsg = document.getElementById('error-msg');
+
+            try {
+                const response = await Api.register({ name, email, password, role });
+                if (response.error) {
+                    errorMsg.textContent = response.error;
+                    errorMsg.style.display = 'block';
+                } else {
+                    // Auto login after registration
+                    const loginRes = await Api.login({ email, password });
+                    if (!loginRes.error) {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (error) {
+                errorMsg.textContent = 'Connection error. Please try again later.';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

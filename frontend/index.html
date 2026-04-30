@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeHunt - Real Estate Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                Home<span>Hunt</span>
+            </a>
+            <ul class="nav-links" id="nav-links">
+                <!-- Populated by JS -->
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Find Your Dream Home Today</h1>
+            <p>Discover the best properties in your area. Buy, sell, or rent with ease through our integrated platform.</p>
+            <div>
+                <a href="properties.html" class="btn-primary" style="margin-right: 1rem;">Browse Properties</a>
+                <a href="register.html" class="btn-primary" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);">Join as Seller</a>
+            </div>
+        </section>
+
+        <section class="mt-2">
+            <h2 class="text-center mb-2">Featured Properties</h2>
+            <div class="property-grid" id="featured-properties">
+                <!-- Populated by JS -->
+                <div class="text-center" style="grid-column: 1/-1;">Loading properties...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 HomeHunt. All rights reserved.</p>
+    </footer>
+
+    <script src="js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const properties = await Api.getProperties();
+                const grid = document.getElementById('featured-properties');
+                
+                if (properties.length === 0) {
+                    grid.innerHTML = '<p class="text-center" style="grid-column: 1/-1;">No properties available right now.</p>';
+                    return;
+                }
+
+                grid.innerHTML = properties.slice(0, 3).map(p => `
+                    <div class="property-card">
+                        <img src="${p.image_url ? 'http://localhost/HomeHunt2/' + p.image_url : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60'}" alt="${p.title}" class="property-image">
+                        <div class="property-info">
+                            <div class="property-price">$${Number(p.price).toLocaleString()}</div>
+                            <h3 class="property-title">${p.title}</h3>
+                            <div class="property-location">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                                ${p.location}
+                            </div>
+                            <a href="property-details.html?id=${p.id}" class="btn-primary" style="display: block; text-align: center; margin-top: 1rem;">View Details</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error(error);
+                document.getElementById('featured-properties').innerHTML = '<p class="text-center text-muted" style="grid-column: 1/-1;">Could not load properties. Ensure Node.js server is running.</p>';
+            }
+        });
+    </script>
+</body>
+</html>
