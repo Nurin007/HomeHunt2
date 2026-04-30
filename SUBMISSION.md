@@ -86,6 +86,15 @@ erDiagram
     }
 ```
 
+**ERD Relationship Description**
+The database is built around four core entities, centered primarily on the `USERS` and `PROPERTIES` tables:
+1. **One-to-Many: Users to Properties (1:N)** 
+   A single user (with the role of a *Seller*) can list multiple properties. However, each property belongs to exactly one seller. This relationship is enforced by the `seller_id` foreign key in the `PROPERTIES` table.
+2. **Many-to-Many: Users to Properties via Wishlist (M:N)**
+   A user (*Buyer*) can save multiple properties to their wishlist, and a single property can be saved by multiple buyers. To resolve this many-to-many relationship, the `WISHLIST` table acts as a junction (mapping) table, storing both `buyer_id` and `property_id`.
+3. **Many-to-Many: Users to Properties via Inquiries (M:N)**
+   Similarly, a buyer can make inquiries on multiple properties, and a property can receive inquiries from multiple buyers. The `INQUIRIES` table resolves this, containing foreign keys for both the buyer and the property, along with the inquiry message and status. 
+
 **Setup Steps**
 1. **Clone/Download:** Download the project files into your XAMPP `htdocs` directory (e.g., `c:\xampp\htdocs\HomeHunt2`).
 2. **Create DB:** Open XAMPP, start Apache and MySQL. Go to `http://localhost/phpmyadmin` and create a database named `homehunt_db`.
